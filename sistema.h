@@ -82,7 +82,7 @@ static const char body_fmt[] __in_flash("body") =
 "        document.getElementById('botao_b').textContent = data.botao_b ? 'Pressionado' : 'Solto';\n"
 "      });\n"
 "    }\n"
-"    setInterval(updateStatus, 500);\n"
+"    setInterval(updateStatus, 1000);\n"
 "  </script>\n"
 "</body>\n"
 "</html>\n";
