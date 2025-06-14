@@ -1,14 +1,7 @@
 #include "clienteHttp.h"
 #include <string.h>
 #include <stdio.h>
-#include <algorithm> // Adiciona suporte para std::min
-
-static const char TEXTO_GET[] __in_flash("http_get_fmt") =
-    "GET %s HTTP/1.1\r\nHost: %s\r\n%sConnection: close\r\n\r\n";
-
-static const char TEXTO_POST[] __in_flash("http_post_fmt") =
-    "POST %s HTTP/1.1\r\nHost: %s\r\n%sContent-Type: application/json\r\n"
-    "Content-Length: %d\r\nConnection: close\r\n\r\n%s";
+#include <algorithm>
 
 static const char MENSAGEM_ERRO_CONEXAO[] __in_flash("erro_conexao") = "Erro de conexao";
 static const char MENSAGEM_ERRO_DNS[] __in_flash("erro_dns") = "Erro DNS";
@@ -119,40 +112,42 @@ static void ao_resolver_dns(const char *nome, const ip_addr_t *ip, void *arg)
     cyw43_arch_lwip_end();
 }
 
-// Implementa a função genérica para montar requisições HTTP
-int montar_requisicao_http(char *buffer, size_t tamanho_buffer, const char *metodo, const char *caminho, const char *host, const char *cabecalhos, const char *corpo)
+int montar_requisicao_http(char *buffer, size_t tamanho_buffer, const char *metodo, const char *caminho, const char *host, const char *cabecalhos, const char *corpo, const char *content_type)
 {
     if (!corpo)
-    {
         corpo = TEXTO_VAZIO_POST;
-    }
 
     return snprintf(buffer, tamanho_buffer,
                     "%s %s HTTP/1.1\r\n"
                     "Host: %s\r\n"
                     "%s"
+                    "Content-Type: %s\r\n"
                     "Content-Length: %d\r\n"
                     "Connection: close\r\n\r\n"
                     "%s",
                     metodo, caminho, host,
                     cabecalhos ? cabecalhos : "",
+                    content_type ? content_type : "application/json",
                     (int)strlen(corpo), corpo);
 }
 
-// Implementa a classe ClienteHttp
-ClienteHttp::ClienteHttp() {
+ClienteHttp::ClienteHttp()
+{
     memset(&estado, 0, sizeof(estado));
 }
 
-void ClienteHttp::get(const char *host, const char *caminho, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
-    executar("GET", host, caminho, nullptr, cabecalhos, on_resposta, on_erro);
+void ClienteHttp::get(const char *host, const char *caminho, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro)
+{
+    executar("GET", host, caminho, nullptr, cabecalhos, "application/json", on_resposta, on_erro);
 }
 
-void ClienteHttp::post(const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
-    executar("POST", host, caminho, conteudo_post, cabecalhos, on_resposta, on_erro);
+void ClienteHttp::post(const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, const char *content_type, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro)
+{
+    executar("POST", host, caminho, conteudo_post, cabecalhos, content_type, on_resposta, on_erro);
 }
 
-void ClienteHttp::executar(const char *metodo, const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
+void ClienteHttp::executar(const char *metodo, const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, const char *content_type, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro)
+{
     estado.cb_resposta = on_resposta;
     estado.cb_erro = on_erro;
 
@@ -162,22 +157,28 @@ void ClienteHttp::executar(const char *metodo, const char *host, const char *cam
                                             caminho,
                                             host,
                                             cabecalhos,
-                                            conteudo_post);
+                                            conteudo_post,
+                                            content_type);
 
     cyw43_arch_lwip_begin();
     err_t err = dns_gethostbyname(host, &estado.endereco, ao_resolver_dns, &estado);
     cyw43_arch_lwip_end();
 
-    if (err == ERR_OK) {
+    if (err == ERR_OK)
+    {
         ao_resolver_dns(host, &estado.endereco, &estado);
-    } else if (err != ERR_INPROGRESS) {
-        if (estado.cb_erro) {
+    }
+    else if (err != ERR_INPROGRESS)
+    {
+        if (estado.cb_erro)
+        {
             estado.cb_erro(MENSAGEM_ERRO_DNS);
         }
         estado.completo = true;
     }
 
-    while (!estado.completo) {
+    while (!estado.completo)
+    {
         sleep_ms(10);
     }
 }
