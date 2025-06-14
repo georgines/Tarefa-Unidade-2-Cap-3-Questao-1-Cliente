@@ -38,11 +38,9 @@ pico_sdk_init()
 add_executable(tarefau2c31
     tarefau2c31.cpp
     auxiliar.cpp
-    auxiliarWifi.cpp
-    # servidor.cpp
+    auxiliarWifi.cpp   
     Acionador.cpp
-    clienteHttp.cpp
-    # ServidorHttp.cpp
+    clienteHttp.cpp   
 )
 
 pico_set_program_name(tarefau2c31 "tarefau2c31")
