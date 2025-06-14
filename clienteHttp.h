@@ -24,3 +24,28 @@ void cliente_http_executar(TipoRequisicaoHttp tipo,
                            CallbackErroHttp on_erro);
 
 int montar_requisicao_http(char *buffer, size_t tamanho_buffer, const char *metodo, const char *caminho, const char *host, const char *cabecalhos, const char *corpo);
+
+// Define o tipo EstadoClienteHttp no cabeçalho para torná-lo acessível
+typedef struct {
+    struct tcp_pcb *pcb;
+    ip_addr_t endereco;
+    char buffer[TAM_BUFFER_REQUISICAO_HTTP];
+    int tamanho;
+    int enviados;
+    bool completo;
+    TipoRequisicaoHttp tipo;
+    CallbackRespostaHttp cb_resposta;
+    CallbackErroHttp cb_erro;
+} EstadoClienteHttp;
+
+// Define a classe ClienteHttp com métodos get e post
+class ClienteHttp {
+public:
+    ClienteHttp();
+    void get(const char *host, const char *caminho, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro);
+    void post(const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro);
+
+private:
+    EstadoClienteHttp estado;
+    void executar(const char *metodo, const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro);
+};

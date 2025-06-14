@@ -14,19 +14,6 @@ static const char MENSAGEM_ERRO_CONEXAO[] __in_flash("erro_conexao") = "Erro de 
 static const char MENSAGEM_ERRO_DNS[] __in_flash("erro_dns") = "Erro DNS";
 static const char TEXTO_VAZIO_POST[] __in_flash("vazio_post") = "{}";
 
-typedef struct
-{
-    struct tcp_pcb *pcb;
-    ip_addr_t endereco;
-    char buffer[TAM_BUFFER_REQUISICAO_HTTP];
-    int tamanho;
-    int enviados;
-    bool completo;
-    TipoRequisicaoHttp tipo;
-    CallbackRespostaHttp cb_resposta;
-    CallbackErroHttp cb_erro;
-} EstadoClienteHttp;
-
 static err_t fechar_conexao(void *arg);
 static err_t ao_receber(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 static err_t ao_conectar(void *arg, struct tcp_pcb *tpcb, err_t err);
@@ -152,20 +139,22 @@ int montar_requisicao_http(char *buffer, size_t tamanho_buffer, const char *meto
                     (int)strlen(corpo), corpo);
 }
 
-void cliente_http_executar(TipoRequisicaoHttp tipo,
-                           const char *host,
-                           const char *caminho,
-                           const char *conteudo_post,
-                           const char *cabecalhos,
-                           CallbackRespostaHttp on_resposta,
-                           CallbackErroHttp on_erro)
-{
-    EstadoClienteHttp estado = {0};
-    estado.tipo = tipo;
+// Implementa a classe ClienteHttp
+ClienteHttp::ClienteHttp() {
+    memset(&estado, 0, sizeof(estado));
+}
+
+void ClienteHttp::get(const char *host, const char *caminho, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
+    executar("GET", host, caminho, nullptr, cabecalhos, on_resposta, on_erro);
+}
+
+void ClienteHttp::post(const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
+    executar("POST", host, caminho, conteudo_post, cabecalhos, on_resposta, on_erro);
+}
+
+void ClienteHttp::executar(const char *metodo, const char *host, const char *caminho, const char *conteudo_post, const char *cabecalhos, CallbackRespostaHttp on_resposta, CallbackErroHttp on_erro) {
     estado.cb_resposta = on_resposta;
     estado.cb_erro = on_erro;
-
-    const char *metodo = (tipo == TIPO_GET) ? "GET" : "POST";
 
     estado.tamanho = montar_requisicao_http(estado.buffer,
                                             TAM_BUFFER_REQUISICAO_HTTP,
@@ -173,27 +162,22 @@ void cliente_http_executar(TipoRequisicaoHttp tipo,
                                             caminho,
                                             host,
                                             cabecalhos,
-                                            (tipo == TIPO_POST) ? conteudo_post : nullptr);
+                                            conteudo_post);
 
     cyw43_arch_lwip_begin();
     err_t err = dns_gethostbyname(host, &estado.endereco, ao_resolver_dns, &estado);
     cyw43_arch_lwip_end();
 
-    if (err == ERR_OK)
-    {
+    if (err == ERR_OK) {
         ao_resolver_dns(host, &estado.endereco, &estado);
-    }
-    else if (err != ERR_INPROGRESS)
-    {
-        if (estado.cb_erro)
-        {
+    } else if (err != ERR_INPROGRESS) {
+        if (estado.cb_erro) {
             estado.cb_erro(MENSAGEM_ERRO_DNS);
         }
         estado.completo = true;
     }
 
-    while (!estado.completo)
-    {
+    while (!estado.completo) {
         sleep_ms(10);
     }
 }
