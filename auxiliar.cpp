@@ -6,6 +6,23 @@ Acionador BotaoB(PIN_BOTAO_B);
 bool botao_a_estado = false;
 bool botao_b_estado = false;
 
+
+void inicializar_stdio()
+{
+    stdio_init_all();
+    printf("Iniciando monitor de botões...\n");
+}
+
+void resposta(const char *r, int t)
+{
+    printf("Resposta (%d):\n%.*s\n", t, t, r);
+}
+
+void erro(const char *msg)
+{
+    printf("Erro: %s\n", msg);
+}
+
 void monitorar_botoes()
 {
     BotaoA.estaPressionadoAgora() ? botao_a_estado = true : botao_a_estado = false;

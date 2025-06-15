@@ -1,17 +1,6 @@
-#include "clienteHttp.h"
+#include "sistema.h"
 #include "auxiliarWifi.h"
 #include "auxiliar.h"
-
-ClienteHttp cliente;
-
-void resposta(const char *r, int t) { printf("Resposta (%d):\n%.*s\n", t, t, r); }
-void erro(const char *msg) { printf("Erro: %s\n", msg); }
-
-void inicializar_stdio()
-{
-    stdio_init_all();
-    printf("Iniciando monitor de botões...\n");
-}
 
 int main()
 {
@@ -28,8 +17,7 @@ int main()
         snprintf(conteudo, sizeof(conteudo), "Temperatura interna: %.2f °C\nBotao A: %s\nBotao B: %s\n",
                  temperatura,
                  botao_a_estado ? "Pressionado" : "Liberado",
-                 botao_b_estado ? "Pressionado" : "Liberado");
-        // printf("%s", conteudo);
+                 botao_b_estado ? "Pressionado" : "Liberado");     
         cliente.post("httpbin.org", "/post", conteudo, nullptr, "application/json", resposta, erro);
         sleep_ms(2000);
         printf("\n\n\n\n");

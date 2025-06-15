@@ -35,13 +35,8 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(tarefau2c31
-    tarefau2c31.cpp
-    auxiliar.cpp
-    auxiliarWifi.cpp   
-    Acionador.cpp
-    clienteHttp.cpp   
-)
+file(GLOB SOURCES "${CMAKE_CURRENT_LIST_DIR}/*.c" "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
+add_executable(tarefau2c31 ${SOURCES})
 
 pico_set_program_name(tarefau2c31 "tarefau2c31")
 pico_set_program_version(tarefau2c31 "0.1")
@@ -69,4 +64,3 @@ target_link_libraries(tarefau2c31
 )
 
 pico_add_extra_outputs(tarefau2c31)
-
