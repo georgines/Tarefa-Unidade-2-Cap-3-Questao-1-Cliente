@@ -31,7 +31,7 @@ int main()
                  botao_b_estado ? "Pressionado" : "Liberado");
         // printf("%s", conteudo);
         cliente.post("httpbin.org", "/post", conteudo, nullptr, "application/json", resposta, erro);
-        sleep_ms(1000);
+        sleep_ms(2000);
         printf("\n\n\n\n");
     }
     return 0;
