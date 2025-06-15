@@ -2,6 +2,8 @@
 #include "auxiliarWifi.h"
 #include "auxiliar.h"
 
+ClienteHttp cliente;
+
 int main()
 {
     inicializar_stdio();

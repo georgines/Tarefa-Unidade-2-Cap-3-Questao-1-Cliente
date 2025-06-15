@@ -30,5 +30,3 @@
 // status dos botões
 extern bool botao_a_estado;
 extern bool botao_b_estado;
-
-ClienteHttp cliente;

@@ -28,7 +28,7 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(tarefau2c31 C CXX ASM)
+project(tarefau2c31_cliente C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -36,17 +36,17 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 file(GLOB SOURCES "${CMAKE_CURRENT_LIST_DIR}/*.c" "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
-add_executable(tarefau2c31 ${SOURCES})
+add_executable(tarefau2c31_cliente ${SOURCES})
 
-pico_set_program_name(tarefau2c31 "tarefau2c31")
-pico_set_program_version(tarefau2c31 "0.1")
+pico_set_program_name(tarefau2c31_cliente "tarefau2c31_cliente")
+pico_set_program_version(tarefau2c31_cliente "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(tarefau2c31 1)
-pico_enable_stdio_usb(tarefau2c31 0)
+pico_enable_stdio_uart(tarefau2c31_cliente 1)
+pico_enable_stdio_usb(tarefau2c31_cliente 0)
 
 # Add the standard library to the build
-target_link_libraries(tarefau2c31
+target_link_libraries(tarefau2c31_cliente
 pico_stdlib
 pico_cyw43_arch_lwip_threadsafe_background
 hardware_gpio
@@ -54,13 +54,13 @@ hardware_adc
 )
 
 # Add the standard include files to the build
-target_include_directories(tarefau2c31 PRIVATE
+target_include_directories(tarefau2c31_cliente PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(tarefau2c31 
+target_link_libraries(tarefau2c31_cliente 
         
 )
 
-pico_add_extra_outputs(tarefau2c31)
+pico_add_extra_outputs(tarefau2c31_cliente)
